@@ -1,0 +1,5 @@
+Flask==1.1.4
+python-dotenv==0.19.1
+openai==0.30.0
+nbclient==0.5.4
+papermill==2.3.3
