@@ -1,5 +1,5 @@
 import os
-from file_utils import preprocess_code_file
+from preprocessing.file_utils import preprocess_code_file
 from jupyter_client.kernelspec import KernelSpecManager
 from jupyter_client.kernelspec import NoSuchKernel
 
