@@ -1,11 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GitHub Repository Analysis Results</title>
+    <title>Repository Metrics</title>
 </head>
 <body>
-    <h1>GitHub Repository Analysis Results</h1>
-    <h2>Repository: {{ repository_name }}</h2>
-    <p>Technical Complexity: {{ complexity }}</p>
+    <h1>Repository Metrics</h1>
+    <table>
+        <tr>
+            <th>Repository Name</th>
+            <th>Code Quality</th>
+            <th>Documentation</th>
+            <th>Activity Level</th>
+            <th>Community Engagement</th>
+            <th>Overall Score</th>
+        </tr>
+        {% for repository_name, metrics in repositories.items() %}
+        <tr>
+            <td>{{ repository_name }}</td>
+            <td>{{ metrics['Code Quality'] }}</td>
+            <td>{{ metrics['Documentation'] }}</td>
+            <td>{{ metrics['Activity Level'] }}</td>
+            <td>{{ metrics['Community Engagement'] }}</td>
+            <td>{{ metrics['Overall Score'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>

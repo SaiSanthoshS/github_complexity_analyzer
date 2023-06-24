@@ -1,10 +1,11 @@
 import openai
+import requests
 from preprocessing.file_utils import preprocess_code_file
 from preprocessing.jupyter_utils import preprocess_jupyter_notebook
 from preprocessing.memory_utils import preprocess_large_file
 
 # Set up your OpenAI API credentials
-openai.api_key = 'YOUR_API_KEY'
+openai.api_key = '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'
 
 def generate_prompt(repository_name):
     """Generate a prompt for evaluating the technical complexity of a repository."""
@@ -32,3 +33,14 @@ def evaluate_repository(repository_name):
     response = completion_response.choices[0].text.strip()
 
     return response
+
+def fetch_repositories(github_username):
+    url = f'https://api.github.com/users/{github_username}/repos'
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        repositories = [repo['name'] for repo in response.json()]
+        return repositories
+    else:
+        # Handle API request error
+        return []
