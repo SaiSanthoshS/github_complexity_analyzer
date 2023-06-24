@@ -19,9 +19,7 @@ def analyze():
     repositories = fetch_repositories(github_username)
 
     # Evaluate the technical complexity of each repository
-    complexity_results = {}
-    max_complexity = float('-inf')
-    most_complex_repository = None
+    complexity_results = []
 
     for repository_name in repositories:
         # Fetch the code of the repository (replace this with your code to fetch the code from the repository)
@@ -31,16 +29,18 @@ def analyze():
         prompt = generate_prompt(repository_name, code)
 
         # Evaluate the technical complexity using GPT
-        complexity = evaluate_repository(prompt)
+        score, reason = evaluate_repository(prompt)
 
-        complexity_results[repository_name] = complexity
+        # Add repository details to the results
+        result = {
+            'repository_name': repository_name,
+            'score': score,
+            'reason': reason,
+            'repo_link': f'https://github.com/{github_username}/{repository_name}'
+        }
+        complexity_results.append(result)
 
-        # Update the most complex repository
-        if complexity > max_complexity:
-            max_complexity = complexity
-            most_complex_repository = repository_name
-
-    return render_template('result.html', repositories=complexity_results, most_complex=most_complex_repository)
+    return render_template('result.html', repositories=complexity_results)
 
 def fetch_repository_code(repository_name):
     """
@@ -82,8 +82,6 @@ def fetch_repository_code(repository_name):
         # Handle request error
         return []
 
-import requests
-
 def fetch_code_from_url(file_url):
     """
     Fetch the code content from the given URL.
@@ -97,9 +95,7 @@ def fetch_code_from_url(file_url):
     else:
         # Handle request error
         return None
-    
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
+

@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Result</title>
-    <style>
-        .most-complex {
-            font-weight: bold;
-            color: red;
-        }
-    </style>
+    <title>Technical Complexity Analyzer</title>
 </head>
 <body>
-    <h1>Repository Complexities</h1>
-    <ul>
-        {% for repository, complexity in repositories.items() %}
-            {% if repository == most_complex %}
-                <li class="most-complex">{{ repository }}: {{ complexity }}</li>
-            {% else %}
-                <li>{{ repository }}: {{ complexity }}</li>
-            {% endif %}
+    <h1>Technical Complexity Results</h1>
+
+    <table>
+        <tr>
+            <th>Repository Name</th>
+            <th>Score</th>
+            <th>Reason</th>
+            <th>Repository Link</th>
+        </tr>
+        {% for result in repositories %}
+        <tr>
+            <td>{{ result.repository_name }}</td>
+            <td>{{ result.score }}</td>
+            <td>{{ result.reason }}</td>
+            <td><a href="{{ result.repo_link }}">Link</a></td>
+        </tr>
         {% endfor %}
-    </ul>
+    </table>
 </body>
 </html>

@@ -24,6 +24,8 @@ def generate_prompt(repository_name, code):
     # Add the code for evaluation
     prompt += f"\n\nCode:\n{code}"
 
+    prompt += "\n\nThe response should be strictly in the format 'Score: X and Reason: Y' with x being the score and y being the reason for that score with the above 5 parameters included\n"
+
     return prompt
 
 def evaluate_repository(prompt):
@@ -45,7 +47,29 @@ def evaluate_repository(prompt):
     # Extract the generated response
     response = completion_response.choices[0].text.strip()
 
-    return response
+    # Process the response to extract the score and reason
+    score, reason = extract_score_and_reason(response)
+
+    return score, reason
+
+def extract_score_and_reason(response):
+    """
+    Extract the score and reason from the response text.
+    The response text should be in the format "Score: X and Reason: Y".
+    Returns (0.0, '') if the response is empty or the score and reason cannot be extracted.
+    """
+    try:
+        parts = response.split("and")
+        score_str = parts[0].strip().split(":")[1].strip()
+        reason_str = parts[1].strip().split(":")[1].strip()
+        score = float(score_str)
+        score = max(0, min(10, score))  # Limit the score between 0 and 10
+        reason = reason_str
+    except (ValueError, IndexError):
+        score = 0.0  # Default score in case of error
+        reason = ''
+
+    return score, reason
 
 def fetch_repositories(github_username):
     url = f'https://api.github.com/users/{github_username}/repos'
