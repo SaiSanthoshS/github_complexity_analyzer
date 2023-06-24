@@ -7,14 +7,27 @@ from preprocessing.memory_utils import preprocess_large_file
 # Set up your OpenAI API credentials
 openai.api_key = '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'
 
-def generate_prompt(repository_name):
-    """Generate a prompt for evaluating the technical complexity of a repository."""
-    prompt = f"What are the technical complexities of the {repository_name} repository?"
+def generate_prompt(repository_name, code):
+    """
+    Generate a prompt for evaluating the technical complexity of a repository.
+    Customize the prompt based on specific parameters for evaluation.
+    """
+    prompt = f"What are the technical complexities of the {repository_name} repository?\n"
+
+    # Add specific parameters for evaluation
+    prompt += "\n1. Code Quality: Evaluate the code quality of the repository."
+    prompt += "\n2. Documentation Quality: Evaluate the documentation quality of the repository."
+    prompt += "\n3. Readability: Evaluate the readability of the code in the repository."
+    prompt += "\n4. Activity Level: Evaluate the activity level of the repository."
+    prompt += "\n5. Community Engagement: Evaluate the community engagement of the repository."
+
+    # Add the code for evaluation
+    prompt += f"\n\nCode:\n{code}"
+
     return prompt
 
-def evaluate_repository(repository_name):
+def evaluate_repository(prompt):
     """Evaluate the technical complexity of a repository using the GPT-3.5 model."""
-    prompt = generate_prompt(repository_name)
 
     # Set the parameters for the completion
     completion_kwargs = {

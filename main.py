@@ -1,11 +1,9 @@
 from flask import Flask, render_template, request
-from rating_utils import (
-    evaluate_code_quality,
-    evaluate_documentation,
-    evaluate_activity_level,
-    evaluate_community_engagement
-)
+from gpt_utils import evaluate_repository, fetch_repositories, generate_prompt
 import requests
+from preprocessing.file_utils import preprocess_code_file
+from preprocessing.jupyter_utils import preprocess_jupyter_notebook
+from preprocessing.memory_utils import preprocess_large_file
 
 app = Flask(__name__, template_folder='app/templates')
 
@@ -20,48 +18,87 @@ def analyze():
     # Fetch repositories based on the GitHub username
     repositories = fetch_repositories(github_username)
 
-    # Evaluate the metrics for each repository
-    metrics_results = {}
+    # Evaluate the technical complexity of each repository
+    complexity_results = {}
+    max_complexity = float('-inf')
+    most_complex_repository = None
+
     for repository_name in repositories:
-        code_quality_score = evaluate_code_quality(repository_name)
-        documentation_score = evaluate_documentation(repository_name)
-        activity_level_score = evaluate_activity_level(repository_name)
-        community_engagement_score = evaluate_community_engagement(repository_name)
+        # Fetch the code of the repository (replace this with your code to fetch the code from the repository)
+        code = fetch_repository_code(repository_name)
 
-        # Calculate the overall rating score
-        overall_score = calculate_overall_score(
-            code_quality_score,
-            documentation_score,
-            activity_level_score,
-            community_engagement_score
-        )
+        # Generate the prompt with code for evaluation
+        prompt = generate_prompt(repository_name, code)
 
-        metrics_results[repository_name] = {
-            'Code Quality': code_quality_score,
-            'Documentation': documentation_score,
-            'Activity Level': activity_level_score,
-            'Community Engagement': community_engagement_score,
-            'Overall Score': overall_score
-        }
+        # Evaluate the technical complexity using GPT
+        complexity = evaluate_repository(prompt)
 
-    return render_template('result.html', repositories=metrics_results)
+        complexity_results[repository_name] = complexity
 
+        # Update the most complex repository
+        if complexity > max_complexity:
+            max_complexity = complexity
+            most_complex_repository = repository_name
 
-def fetch_repositories(github_username):
-    # Fetch repositories based on the GitHub username
-    url = f"https://api.github.com/users/{github_username}/repos"
+    return render_template('result.html', repositories=complexity_results, most_complex=most_complex_repository)
+
+def fetch_repository_code(repository_name):
+    """
+    Fetch the code from a given repository.
+    Replace this function with your code to fetch the code from the repository.
+    """
+    # Make a GET request to fetch the repository code
+    url = f"https://api.github.com/repos/{repository_name}/contents"
     response = requests.get(url)
+    MAX_TOKENS_THRESHOLD = 1024
+
     if response.status_code == 200:
-        repositories = [repo['name'] for repo in response.json()]
-        return repositories
+        contents = response.json()
+        code_files = []
+
+        for item in contents:
+            if item['type'] == 'file':
+                file_url = item['download_url']
+                file_name = item['name']
+                file_extension = file_name.rsplit('.', 1)[-1].lower()
+
+                # Preprocess the code file based on its extension
+                if file_extension == 'ipynb':
+                    code = fetch_code_from_url(file_url)
+                    if code is not None:
+                        preprocessed_code = preprocess_jupyter_notebook(code)
+                        code_files.append((file_name, preprocessed_code))
+                else:
+                    code = fetch_code_from_url(file_url)
+                    if code is not None:
+                        if len(code) > MAX_TOKENS_THRESHOLD:
+                            preprocessed_code = preprocess_large_file(code)
+                        else:
+                            preprocessed_code = preprocess_code_file(code)
+                        code_files.append((file_name, preprocessed_code))
+
+        return code_files
     else:
+        # Handle request error
         return []
 
-def calculate_overall_score(code_quality_score, documentation_score, activity_level_score, community_engagement_score):
-    # Placeholder logic to calculate the overall rating score
-    # Your code here
-    # Example: Assume a simple average of the individual scores
-    return (code_quality_score + documentation_score + activity_level_score + community_engagement_score) / 4
+import requests
+
+def fetch_code_from_url(file_url):
+    """
+    Fetch the code content from the given URL.
+    Replace this function with your code to fetch the code content.
+    """
+    response = requests.get(file_url)
+
+    if response.status_code == 200:
+        code = response.text
+        return code
+    else:
+        # Handle request error
+        return None
+    
+
 
 
 if __name__ == '__main__':
