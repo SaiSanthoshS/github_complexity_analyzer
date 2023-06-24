@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request
 from gpt_utils import evaluate_repository
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='app/templates')
 
 @app.route('/')
 def index():
@@ -31,7 +31,6 @@ def extract_repository_name(github_url):
     repository_name = url_parts[-1]
 
     return repository_name
-
 
 if __name__ == '__main__':
     app.run(debug=True)
