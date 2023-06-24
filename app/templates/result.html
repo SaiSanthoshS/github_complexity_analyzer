@@ -1,29 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Repository Metrics</title>
+    <title>Result</title>
+    <style>
+        .most-complex {
+            font-weight: bold;
+            color: red;
+        }
+    </style>
 </head>
 <body>
-    <h1>Repository Metrics</h1>
-    <table>
-        <tr>
-            <th>Repository Name</th>
-            <th>Code Quality</th>
-            <th>Documentation</th>
-            <th>Activity Level</th>
-            <th>Community Engagement</th>
-            <th>Overall Score</th>
-        </tr>
-        {% for repository_name, metrics in repositories.items() %}
-        <tr>
-            <td>{{ repository_name }}</td>
-            <td>{{ metrics['Code Quality'] }}</td>
-            <td>{{ metrics['Documentation'] }}</td>
-            <td>{{ metrics['Activity Level'] }}</td>
-            <td>{{ metrics['Community Engagement'] }}</td>
-            <td>{{ metrics['Overall Score'] }}</td>
-        </tr>
+    <h1>Repository Complexities</h1>
+    <ul>
+        {% for repository, complexity in repositories.items() %}
+            {% if repository == most_complex %}
+                <li class="most-complex">{{ repository }}: {{ complexity }}</li>
+            {% else %}
+                <li>{{ repository }}: {{ complexity }}</li>
+            {% endif %}
         {% endfor %}
-    </table>
+    </ul>
 </body>
 </html>
