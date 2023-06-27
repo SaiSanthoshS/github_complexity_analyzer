@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request
 from gpt_utils import evaluate_repository, fetch_repositories, generate_prompt
 import requests
-from preprocessing.file_utils import preprocess_code_file
+from preprocessing.file_utils import is_code_file, preprocess_code_file
 from preprocessing.jupyter_utils import preprocess_jupyter_notebook
 from preprocessing.memory_utils import preprocess_large_file
 
@@ -20,40 +20,38 @@ def analyze():
 
     # Evaluate the technical complexity of each repository
     complexity_results = {}
-    max_complexity = float('-inf')
+    max_score = 0
     most_complex_repository = None
 
     for repository_name in repositories:
         # Fetch the code of the repository (replace this with your code to fetch the code from the repository)
         code = fetch_repository_code(repository_name)
 
+        # Preprocess the code based on its size
+        if len(code) > 10_000:
+            code = preprocess_large_file(code)
+        elif code.endswith('.ipynb'):
+            code = preprocess_jupyter_notebook(code, max_tokens=600)
+        else:
+            code = preprocess_code_file(code, max_tokens=600)
+
         # Generate the prompt with code for evaluation
         prompt = generate_prompt(repository_name, code)
 
         # Evaluate the technical complexity using GPT
-        scores, reasons = evaluate_repository(prompt)
+        result = evaluate_repository(prompt)
 
-        # Calculate the average score
-        avg_score = sum(scores.values()) / len(scores)
-
-        # Find the maximum score
-        max_score = max(scores.values())
-
-        complexity_results[repository_name] = {
-            'Code Quality': {'score': scores['Code Quality'], 'reason': reasons['Code Quality']},
-            'Documentation Quality': {'score': scores['Documentation Quality'], 'reason': reasons['Documentation Quality']},
-            'Readability': {'score': scores['Readability'], 'reason': reasons['Readability']},
-            'Activity Level': {'score': scores['Activity Level'], 'reason': reasons['Activity Level']},
-            'Community Engagement': {'score': scores['Community Engagement'], 'reason': reasons['Community Engagement']},
-            'Max Score': max_score
-        }
+        # Update the complexity results
+        complexity_results[repository_name] = result
 
         # Update the most complex repository
-        if avg_score > max_complexity:
-            max_complexity = avg_score
+        avg_score = sum(result[key]['score'] for key in result if result[key]['score'] is not None) / len(result)
+        if avg_score > max_score:
+            max_score = avg_score
             most_complex_repository = repository_name
 
     return render_template('result.html', repositories=complexity_results, most_complex=most_complex_repository)
+
 
 
 def fetch_repository_code(repository_name):
@@ -64,7 +62,6 @@ def fetch_repository_code(repository_name):
     # Make a GET request to fetch the repository code
     url = f"https://api.github.com/repos/{repository_name}/contents"
     response = requests.get(url)
-    MAX_TOKENS_THRESHOLD = 1024
 
     if response.status_code == 200:
         contents = response.json()
@@ -73,28 +70,16 @@ def fetch_repository_code(repository_name):
         for item in contents:
             if item['type'] == 'file':
                 file_url = item['download_url']
-                file_name = item['name']
-                file_extension = file_name.rsplit('.', 1)[-1].lower()
+                code = fetch_code_from_url(file_url)
+                if code is not None:
+                    code_files.append(code)
 
-                # Preprocess the code file based on its extension
-                if file_extension == 'ipynb':
-                    code = fetch_code_from_url(file_url)
-                    if code is not None:
-                        preprocessed_code = preprocess_jupyter_notebook(code)
-                        code_files.append((file_name, preprocessed_code))
-                else:
-                    code = fetch_code_from_url(file_url)
-                    if code is not None:
-                        if len(code) > MAX_TOKENS_THRESHOLD:
-                            preprocessed_code = preprocess_large_file(code)
-                        else:
-                            preprocessed_code = preprocess_code_file(code)
-                        code_files.append((file_name, preprocessed_code))
+        return "\n".join(code_files)
 
-        return code_files
     else:
         # Handle request error
-        return []
+        return ""
+
 
 def fetch_code_from_url(file_url):
     """
@@ -112,4 +97,3 @@ def fetch_code_from_url(file_url):
 
 if __name__ == '__main__':
     app.run(debug=True)
-

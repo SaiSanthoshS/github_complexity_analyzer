@@ -18,13 +18,12 @@ def is_code_file(file_path):
     file_extension = get_file_extension(file_path)
     return file_extension.lower() in valid_extensions
 
-def preprocess_code_file(file_path, max_tokens):
+def preprocess_code_file(code, max_tokens):
     """Preprocess a code file by truncating it if it exceeds the token limit."""
-    with open(file_path, 'r') as file:
-        code = file.read()
-
     code_lines = code.split('\n')
     if len(code_lines) > max_tokens:
         truncated_code = '\n'.join(code_lines[:max_tokens])
-        with open(file_path, 'w') as file:
-            file.write(truncated_code)
+        return truncated_code
+
+    return code
+

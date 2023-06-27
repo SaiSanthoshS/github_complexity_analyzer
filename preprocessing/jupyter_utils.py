@@ -12,16 +12,20 @@ def convert_notebook_to_script(notebook_path, script_path):
 def get_notebook_kernel(notebook_path):
     """Get the kernel name of a Jupyter notebook."""
     kernel_spec_manager = KernelSpecManager()
-    try:
-        kernel_spec = kernel_spec_manager.get_kernel_spec_for_nbconvert(notebook_path)
+    kernel_spec = kernel_spec_manager.find_kernel_specs().get('python3')  # Replace 'python3' with the appropriate kernel name
+    if kernel_spec is not None:
         return kernel_spec.language
-    except NoSuchKernel:
+    else:
         raise ValueError("Unable to determine the kernel for the notebook.")
 
-def preprocess_jupyter_notebook(notebook_path, max_tokens):
-    """Preprocess a Jupyter notebook by converting it to a script and truncating it if it exceeds the token limit."""
-    script_path = notebook_path.replace('.ipynb', '.py')
-    convert_notebook_to_script(notebook_path, script_path)
+
+def preprocess_jupyter_notebook(notebook_code, max_tokens):
+    """Preprocess a Jupyter notebook code by converting it to a script and truncating it if it exceeds the token limit."""
+    script_path = "temp_script.py"
+    with open(script_path, 'w') as script_file:
+        script_file.write(notebook_code)
+
     preprocess_code_file(script_path, max_tokens)
-    os.remove(notebook_path)
+    os.remove(script_path)
+
 

@@ -1,29 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Repository Complexity Analysis</title>
+    <title>Complexity Analyzer - Results</title>
     <style>
         table {
             border-collapse: collapse;
             width: 100%;
         }
+
         th, td {
-            border: 1px solid black;
-            padding: 8px;
             text-align: left;
+            padding: 8px;
         }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
         th {
-            background-color: lightgray;
+            background-color: #4CAF50;
+            color: white;
         }
+
         .highlight {
             background-color: yellow;
         }
     </style>
 </head>
 <body>
-    <h1>Repository Complexity Analysis</h1>
+    <h1>Complexity Analyzer - Results</h1>
 
-    <h2>Results</h2>
+    <h3>Most Complex Repository: {{ most_complex }}</h3>
 
     <table>
         <tr>
@@ -35,21 +42,27 @@
             <th>Community Engagement</th>
             <th>Max Score</th>
         </tr>
-        {% for repository, complexity in repositories.items() %}
-        <tr {% if repository == most_complex %}class="highlight"{% endif %}>
-            <td>{{ repository }}</td>
-            <td>{{ complexity['Code Quality']['score'] }}</td>
-            <td>{{ complexity['Documentation Quality']['score'] }}</td>
-            <td>{{ complexity['Readability']['score'] }}</td>
-            <td>{{ complexity['Activity Level']['score'] }}</td>
-            <td>{{ complexity['Community Engagement']['score'] }}</td>
-            <td>{{ complexity['Max Score'] }}</td>
-        </tr>
+        {% for repository, results in repositories.items() %}
+            <tr>
+                <td>{{ repository }}</td>
+                <td>{{ results['Code Quality']['score'] }}</td>
+                <td>{{ results['Documentation Quality']['score'] }}</td>
+                <td>{{ results['Readability']['score'] }}</td>
+                <td>{{ results['Activity Level']['score'] }}</td>
+                <td>{{ results['Community Engagement']['score'] }}</td>
+                <td {% if repository == most_complex %} class="highlight" {% endif %}>{{ results['Max Score'] }}</td>
+            </tr>
+            <tr>
+                <td colspan="7">
+                    <strong>Code Quality:</strong> {{ results['Code Quality']['reason'] }}<br>
+                    <strong>Documentation Quality:</strong> {{ results['Documentation Quality']['reason'] }}<br>
+                    <strong>Readability:</strong> {{ results['Readability']['reason'] }}<br>
+                    <strong>Activity Level:</strong> {{ results['Activity Level']['reason'] }}<br>
+                    <strong>Community Engagement:</strong> {{ results['Community Engagement']['reason'] }}
+                </td>
+            </tr>
         {% endfor %}
     </table>
-
-    <h2>Max Complexity</h2>
-    <p>Most Complex Repository: {{ most_complex }}</p>
 
 </body>
 </html>
