@@ -40,7 +40,7 @@ def extract_score_and_reason(response):
     results = {}
 
     try:
-        pattern = r'(\d+)\. (\w+): Score: (\d+) and Reason: (.+)'
+        pattern = r'(\d+)\. (\w+(?: \w+)*): Score: (\d+) and Reason: (.+)'
         matches = re.findall(pattern, response)
 
         for match in matches:
@@ -55,6 +55,9 @@ def extract_score_and_reason(response):
 
     return results
 
+
+
+
 def evaluate_repository(prompt):
     """Evaluate the technical complexity of a repository using the GPT-3.5 model."""
 
@@ -62,7 +65,7 @@ def evaluate_repository(prompt):
     completion_kwargs = {
         'model': 'text-davinci-003',
         'prompt': prompt,
-        'max_tokens': 150,
+        'max_tokens': 400,
         'temperature': 0.6,
         'n': 1,
         'stop': None

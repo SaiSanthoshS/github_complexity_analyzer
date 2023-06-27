@@ -1,68 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Complexity Analyzer - Results</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repository Complexity Analysis Results</title>
     <style>
         table {
             border-collapse: collapse;
             width: 100%;
         }
-
+        
         th, td {
             text-align: left;
             padding: 8px;
+            border-bottom: 1px solid #ddd;
         }
-
-        tr:nth-child(even) {
+        
+        th {
             background-color: #f2f2f2;
         }
-
-        th {
-            background-color: #4CAF50;
-            color: white;
+        
+        .reason-popup {
+            display: none;
+            position: absolute;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
         }
-
-        .highlight {
-            background-color: yellow;
+        
+        td span:hover + .reason-popup {
+            display: block;
+        }
+        
+        .github-link {
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Complexity Analyzer - Results</h1>
+    <h1>Repository Complexity Analysis Results</h1>
 
-    <h3>Most Complex Repository: {{ most_complex }}</h3>
-
+    <h2>Repositories:</h2>
     <table>
-        <tr>
-            <th>Repository</th>
-            <th>Code Quality</th>
-            <th>Documentation Quality</th>
-            <th>Readability</th>
-            <th>Activity Level</th>
-            <th>Community Engagement</th>
-            <th>Max Score</th>
-        </tr>
-        {% for repository, results in repositories.items() %}
+        <thead>
             <tr>
-                <td>{{ repository }}</td>
-                <td>{{ results['Code Quality']['score'] }}</td>
-                <td>{{ results['Documentation Quality']['score'] }}</td>
-                <td>{{ results['Readability']['score'] }}</td>
-                <td>{{ results['Activity Level']['score'] }}</td>
-                <td>{{ results['Community Engagement']['score'] }}</td>
-                <td {% if repository == most_complex %} class="highlight" {% endif %}>{{ results['Max Score'] }}</td>
+                <th>Repository</th>
+                <th>Code Quality</th>
+                <th>Documentation Quality</th>
+                <th>Readability</th>
+                <th>Activity Level</th>
+                <th>Community Engagement</th>
             </tr>
-            <tr>
-                <td colspan="7">
-                    <strong>Code Quality:</strong> {{ results['Code Quality']['reason'] }}<br>
-                    <strong>Documentation Quality:</strong> {{ results['Documentation Quality']['reason'] }}<br>
-                    <strong>Readability:</strong> {{ results['Readability']['reason'] }}<br>
-                    <strong>Activity Level:</strong> {{ results['Activity Level']['reason'] }}<br>
-                    <strong>Community Engagement:</strong> {{ results['Community Engagement']['reason'] }}
-                </td>
-            </tr>
-        {% endfor %}
+        </thead>
+        <tbody>
+            {% for repository, result in repositories.items() %}
+                <tr>
+                    <td>
+                        <a href="https://github.com/{{ repository }}" class="github-link">{{ repository }}</a>
+                    </td>
+                    <td>
+                        {% if result['Code Quality']['score'] is not none %}
+                            <span>{{ result['Code Quality']['score'] }}</span>
+                            <div class="reason-popup">
+                                {{ result['Code Quality']['reason'] }}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result['Documentation Quality']['score'] is not none %}
+                            <span>{{ result['Documentation Quality']['score'] }}</span>
+                            <div class="reason-popup">
+                                {{ result['Documentation Quality']['reason'] }}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result['Readability']['score'] is not none %}
+                            <span>{{ result['Readability']['score'] }}</span>
+                            <div class="reason-popup">
+                                {{ result['Readability']['reason'] }}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result['Activity Level']['score'] is not none %}
+                            <span>{{ result['Activity Level']['score'] }}</span>
+                            <div class="reason-popup">
+                                {{ result['Activity Level']['reason'] }}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if result['Community Engagement']['score'] is not none %}
+                            <span>{{ result['Community Engagement']['score'] }}</span>
+                            <div class="reason-popup">
+                                {{ result['Community Engagement']['reason'] }}
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
     </table>
 
+    {% if most_complex %}
+        <h2>Most Complex Repository:</h2>
+        <p>{{ most_complex }}</p>
+    {% endif %}
+
+    <script>
+        // Show reason popup when hovering over the score
+        const spans = document.querySelectorAll('td span');
+        spans.forEach((span) => {
+            span.addEventListener('mouseover', (event) => {
+                const reasonId = `${event.target.parentNode.parentNode.firstChild.firstChild.textContent}-reason`;
+                const reasonPopup = document.getElementById(reasonId);
+                reasonPopup.style.display = 'block';
+            });
+
+            span.addEventListener('mouseout', (event) => {
+                const reasonId = `${event.target.parentNode.parentNode.firstChild.firstChild.textContent}-reason`;
+                const reasonPopup = document.getElementById(reasonId);
+                reasonPopup.style.display = 'none';
+            });
+        });
+    </script>
 </body>
 </html>
