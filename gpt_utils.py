@@ -56,22 +56,42 @@ def evaluate_repository(prompt):
 
 def extract_score_and_reason(response):
     """
-    Extract the score and reason from the response text.
-    The response text should be in the format "Score: X and Reason: Y".
-    Returns (0.0, '') if the response is empty or the score and reason cannot be extracted.
+    Extract the score and reason for each criterion from the response text.
+    The response text should be in the format:
+    "1. Code Quality: Score: X and Reason: Y
+    2. Documentation Quality: Score: X and Reason: Y
+    3. Readability: Score: X and Reason: Y
+    4. Activity Level: Score: X and Reason: Y
+    5. Community Engagement: Score: X and Reason: Y"
+    Returns a dictionary containing the scores and reasons for each criterion.
     """
-    try:
-        parts = response.split("and")
-        score_str = parts[0].strip().split(":")[1].strip()
-        reason_str = parts[1].strip().split(":")[1].strip()
-        score = float(score_str)
-        score = max(0, min(10, score))  # Limit the score between 0 and 10
-        reason = reason_str
-    except (ValueError, IndexError):
-        score = 0.0  # Default score in case of error
-        reason = ''
+    scores = {}
+    reasons = {}
 
-    return score, reason
+    try:
+        # Split the response into individual criteria
+        criteria_list = response.split('\n')
+
+        # Process each criterion
+        for criterion in criteria_list:
+            parts = criterion.strip().split(":")
+            criterion_name = parts[0].strip()
+            score_str = parts[1].split("Score:")[1].strip()
+            reason_str = parts[2].split("Reason:")[1].strip()
+
+            score = float(score_str)
+            score = max(0, min(10, score))  # Limit the score between 0 and 10
+
+            scores[criterion_name] = score
+            reasons[criterion_name] = reason_str
+
+    except (ValueError, IndexError):
+        # Handle parsing errors
+        scores = {}
+        reasons = {}
+
+    return scores, reasons
+
 
 def fetch_repositories(github_username):
     url = f'https://api.github.com/users/{github_username}/repos'

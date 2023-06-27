@@ -19,7 +19,9 @@ def analyze():
     repositories = fetch_repositories(github_username)
 
     # Evaluate the technical complexity of each repository
-    complexity_results = []
+    complexity_results = {}
+    max_complexity = float('-inf')
+    most_complex_repository = None
 
     for repository_name in repositories:
         # Fetch the code of the repository (replace this with your code to fetch the code from the repository)
@@ -29,18 +31,30 @@ def analyze():
         prompt = generate_prompt(repository_name, code)
 
         # Evaluate the technical complexity using GPT
-        score, reason = evaluate_repository(prompt)
+        scores, reasons = evaluate_repository(prompt)
 
-        # Add repository details to the results
-        result = {
-            'repository_name': repository_name,
-            'score': score,
-            'reason': reason,
-            'repo_link': f'https://github.com/{github_username}/{repository_name}'
+        # Calculate the average score
+        avg_score = sum(scores.values()) / len(scores)
+
+        # Find the maximum score
+        max_score = max(scores.values())
+
+        complexity_results[repository_name] = {
+            'Code Quality': {'score': scores['Code Quality'], 'reason': reasons['Code Quality']},
+            'Documentation Quality': {'score': scores['Documentation Quality'], 'reason': reasons['Documentation Quality']},
+            'Readability': {'score': scores['Readability'], 'reason': reasons['Readability']},
+            'Activity Level': {'score': scores['Activity Level'], 'reason': reasons['Activity Level']},
+            'Community Engagement': {'score': scores['Community Engagement'], 'reason': reasons['Community Engagement']},
+            'Max Score': max_score
         }
-        complexity_results.append(result)
 
-    return render_template('result.html', repositories=complexity_results)
+        # Update the most complex repository
+        if avg_score > max_complexity:
+            max_complexity = avg_score
+            most_complex_repository = repository_name
+
+    return render_template('result.html', repositories=complexity_results, most_complex=most_complex_repository)
+
 
 def fetch_repository_code(repository_name):
     """

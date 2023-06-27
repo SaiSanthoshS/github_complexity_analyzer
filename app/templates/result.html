@@ -1,26 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Technical Complexity Analyzer</title>
+    <title>Repository Complexity Analysis</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: lightgray;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
 </head>
 <body>
-    <h1>Technical Complexity Results</h1>
+    <h1>Repository Complexity Analysis</h1>
+
+    <h2>Results</h2>
 
     <table>
         <tr>
-            <th>Repository Name</th>
-            <th>Score</th>
-            <th>Reason</th>
-            <th>Repository Link</th>
+            <th>Repository</th>
+            <th>Code Quality</th>
+            <th>Documentation Quality</th>
+            <th>Readability</th>
+            <th>Activity Level</th>
+            <th>Community Engagement</th>
+            <th>Max Score</th>
         </tr>
-        {% for result in repositories %}
-        <tr>
-            <td>{{ result.repository_name }}</td>
-            <td>{{ result.score }}</td>
-            <td>{{ result.reason }}</td>
-            <td><a href="{{ result.repo_link }}">Link</a></td>
+        {% for repository, complexity in repositories.items() %}
+        <tr {% if repository == most_complex %}class="highlight"{% endif %}>
+            <td>{{ repository }}</td>
+            <td>{{ complexity['Code Quality']['score'] }}</td>
+            <td>{{ complexity['Documentation Quality']['score'] }}</td>
+            <td>{{ complexity['Readability']['score'] }}</td>
+            <td>{{ complexity['Activity Level']['score'] }}</td>
+            <td>{{ complexity['Community Engagement']['score'] }}</td>
+            <td>{{ complexity['Max Score'] }}</td>
         </tr>
         {% endfor %}
     </table>
+
+    <h2>Max Complexity</h2>
+    <p>Most Complex Repository: {{ most_complex }}</p>
+
 </body>
 </html>
