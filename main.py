@@ -50,7 +50,10 @@ def analyze():
             max_score = avg_score
             most_complex_repository = repository_name
 
-    return render_template('result.html', repositories=complexity_results, most_complex=most_complex_repository)
+        # Update the average score in the result dictionary
+        result['Average Max Score'] = avg_score
+
+    return render_template('result.html', repositories=complexity_results, most_complex=most_complex_repository, username=github_username)
 
 
 if __name__ == '__main__':

@@ -39,12 +39,16 @@
             text-decoration: underline;
             cursor: pointer;
         }
+        
+        .most-complex {
+            background-color: yellow;
+        }
     </style>
 </head>
 <body>
     <h1>Repository Complexity Analysis Results</h1>
 
-    <h2>Repositories:</h2>
+    <h2>Repositories of {{ username }}:</h2>
     <table>
         <thead>
             <tr>
@@ -54,13 +58,14 @@
                 <th>Readability</th>
                 <th>Activity Level</th>
                 <th>Community Engagement</th>
+                <th>Average Max Score</th>
             </tr>
         </thead>
         <tbody>
             {% for repository, result in repositories.items() %}
-                <tr>
+                <tr {% if repository == most_complex %}class="most-complex"{% endif %}>
                     <td>
-                        <a href="https://github.com/{{ repository }}" class="github-link">{{ repository }}</a>
+                        <a href="https://github.com/{{ username }}/{{ repository }}" class="github-link" target="_blank">{{ repository }}</a>
                     </td>
                     <td>
                         {% if result['Code Quality']['score'] is not none %}
@@ -102,32 +107,16 @@
                             </div>
                         {% endif %}
                     </td>
+                    <td>
+                        {% if 'Average Max Score' in result %}
+                            {{ result['Average Max Score'] }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
-
-    {% if most_complex %}
-        <h2>Most Complex Repository:</h2>
-        <p>{{ most_complex }}</p>
-    {% endif %}
-
-    <script>
-        // Show reason popup when hovering over the score
-        const spans = document.querySelectorAll('td span');
-        spans.forEach((span) => {
-            span.addEventListener('mouseover', (event) => {
-                const reasonId = `${event.target.parentNode.parentNode.firstChild.firstChild.textContent}-reason`;
-                const reasonPopup = document.getElementById(reasonId);
-                reasonPopup.style.display = 'block';
-            });
-
-            span.addEventListener('mouseout', (event) => {
-                const reasonId = `${event.target.parentNode.parentNode.firstChild.firstChild.textContent}-reason`;
-                const reasonPopup = document.getElementById(reasonId);
-                reasonPopup.style.display = 'none';
-            });
-        });
-    </script>
 </body>
 </html>

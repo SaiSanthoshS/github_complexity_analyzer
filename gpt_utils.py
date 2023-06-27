@@ -3,7 +3,7 @@ import requests
 import re
 
 # Set up your OpenAI API credentials
-openai.api_key = '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'
+openai.api_key = 'YOUR API KEY HERE'
 
 def generate_prompt(repository_name, code):
     """
