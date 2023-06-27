@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from gpt_utils import evaluate_repository, fetch_repositories, generate_prompt
+from gpt_utils import evaluate_repository, fetch_repositories, generate_prompt, fetch_repository_code, fetch_code_from_url
 import requests
 from preprocessing.file_utils import is_code_file, preprocess_code_file
 from preprocessing.jupyter_utils import preprocess_jupyter_notebook
@@ -52,48 +52,6 @@ def analyze():
 
     return render_template('result.html', repositories=complexity_results, most_complex=most_complex_repository)
 
-
-
-def fetch_repository_code(repository_name):
-    """
-    Fetch the code from a given repository.
-    Replace this function with your code to fetch the code from the repository.
-    """
-    # Make a GET request to fetch the repository code
-    url = f"https://api.github.com/repos/{repository_name}/contents"
-    response = requests.get(url)
-
-    if response.status_code == 200:
-        contents = response.json()
-        code_files = []
-
-        for item in contents:
-            if item['type'] == 'file':
-                file_url = item['download_url']
-                code = fetch_code_from_url(file_url)
-                if code is not None:
-                    code_files.append(code)
-
-        return "\n".join(code_files)
-
-    else:
-        # Handle request error
-        return ""
-
-
-def fetch_code_from_url(file_url):
-    """
-    Fetch the code content from the given URL.
-    Replace this function with your code to fetch the code content.
-    """
-    response = requests.get(file_url)
-
-    if response.status_code == 200:
-        code = response.text
-        return code
-    else:
-        # Handle request error
-        return None
 
 if __name__ == '__main__':
     app.run(debug=True)

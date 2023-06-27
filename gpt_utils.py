@@ -1,5 +1,6 @@
 import openai
 import requests
+import re
 
 # Set up your OpenAI API credentials
 openai.api_key = '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'
@@ -25,6 +26,35 @@ def generate_prompt(repository_name, code):
 
     return prompt
 
+def extract_score_and_reason(response):
+    """
+    Extract the score and reason for each criterion from the response text.
+    The response text should be in the format:
+    "1. Code Quality: Score: X and Reason: Y
+    2. Documentation Quality: Score: X and Reason: Y
+    3. Readability: Score: X and Reason: Y
+    4. Activity Level: Score: X and Reason: Y
+    5. Community Engagement: Score: X and Reason: Y"
+    Returns a dictionary containing the scores and reasons for each criterion.
+    """
+    results = {}
+
+    try:
+        pattern = r'(\d+)\. (\w+): Score: (\d+) and Reason: (.+)'
+        matches = re.findall(pattern, response)
+
+        for match in matches:
+            criterion = match[1]
+            score = int(match[2])
+            reason = match[3]
+            results[criterion] = {'score': score, 'reason': reason}
+
+    except Exception:
+        # Handle any potential parsing errors
+        pass
+
+    return results
+
 def evaluate_repository(prompt):
     """Evaluate the technical complexity of a repository using the GPT-3.5 model."""
 
@@ -47,64 +77,11 @@ def evaluate_repository(prompt):
     print(response)
 
     # Process the response to extract the score and reason
-    score, reason = extract_score_and_reason(response)
-
-    # Check if the keys exist in the response
-    score_keys = ['Code Quality', 'Documentation Quality', 'Readability', 'Activity Level', 'Community Engagement']
-    reason_keys = ['Code Quality', 'Documentation Quality', 'Readability', 'Activity Level', 'Community Engagement']
-
-    # Create the result dictionary
-    result = {}
-    for key in score_keys:
-        if key in score:
-            result[key] = {'score': score[key], 'reason': reason[key]}
-        else:
-            result[key] = {'score': None, 'reason': None}
+    result = extract_score_and_reason(response)
 
     print(result)
 
     return result
-
-def extract_score_and_reason(response):
-    """
-    Extract the score and reason for each criterion from the response text.
-    The response text should be in the format:
-    "1. Code Quality: Score: X and Reason: Y
-    2. Documentation Quality: Score: X and Reason: Y
-    3. Readability: Score: X and Reason: Y
-    4. Activity Level: Score: X and Reason: Y
-    5. Community Engagement: Score: X and Reason: Y"
-    Returns a dictionary containing the scores and reasons for each criterion.
-    """
-    scores = {}
-    reasons = {}
-
-    try:
-        # Split the response into individual criteria
-        criteria_list = response.split('\n')
-
-        # Process each criterion
-        for criterion in criteria_list:
-            parts = criterion.strip().split(":")
-            criterion_name = parts[0].strip()
-            score_str = parts[1].split("Score:")[1].strip()
-            reason_str = parts[2].split("Reason:")[1].strip()
-
-            score = float(score_str)
-            score = max(0, min(10, score))  # Limit the score between 0 and 10
-
-            scores[criterion_name] = score
-            reasons[criterion_name] = reason_str
-
-    except (ValueError, IndexError):
-        # Handle parsing errors
-        scores = {}
-        reasons = {}
-
-    return scores, reasons
-
-
-
 
 def fetch_repositories(github_username):
     url = f'https://api.github.com/users/{github_username}/repos'
