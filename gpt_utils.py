@@ -47,6 +47,8 @@ def evaluate_repository(prompt):
     # Extract the generated response
     response = completion_response.choices[0].text.strip()
 
+    print("ChatGPT Response:", response)
+
     # Process the response to extract the score and reason
     score, reason = extract_score_and_reason(response)
 
